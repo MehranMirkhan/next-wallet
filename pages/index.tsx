@@ -1,12 +1,14 @@
+import { useCallback, useReducer, useState } from "react";
+import { Transaction } from "@prisma/client";
 import Head from "next/head";
 import axios from "axios";
-import { Transaction } from "@prisma/client";
-import { useCallback, useReducer, useState } from "react";
+
+import Table from "components/Table";
 
 export default function Home() {
   const { transactions, onGetTransactions } = useTransaction();
   return (
-    <div className="relative h-screen">
+    <div className="container relative h-screen">
       <Head>
         <title>Next Wallet</title>
       </Head>
@@ -14,12 +16,17 @@ export default function Home() {
       <main>
         <h1 className="text-3xl font-bold underline">Welcome to Next Wallet</h1>
         <TransactionForm />
-        <button onClick={onGetTransactions}>Refresh</button>
-        <ul>
-          {transactions?.map((t) => (
-            <p key={t.id}>{JSON.stringify(t)}</p>
-          ))}
-        </ul>
+        <button className="btn" onClick={onGetTransactions}>
+          Refresh
+        </button>
+        <Table
+          columns={[
+            { title: "From Wallet", key: "fromWalletId" },
+            { title: "To Wallet", key: "toWalletId" },
+            { title: "Amount", key: "amount" },
+          ]}
+          data={transactions}
+        />
       </main>
 
       <footer className="absolute bottom-0 w-full text-center">
@@ -42,10 +49,30 @@ function TransactionForm() {
 
   return (
     <form onSubmit={onSubmit}>
-      <input type="text" name="fromWalletId" onChange={setFormData} />
-      <input type="text" name="toWalletId" onChange={setFormData} />
-      <input type="text" name="amount" onChange={setFormData} />
-      <button type="submit">Submit</button>
+      <input
+        className="input"
+        type="text"
+        name="fromWalletId"
+        placeholder="Source Wallet Id"
+        onChange={setFormData}
+      />
+      <input
+        className="input"
+        type="text"
+        name="toWalletId"
+        placeholder="Destination Wallet Id"
+        onChange={setFormData}
+      />
+      <input
+        className="input"
+        type="text"
+        name="amount"
+        placeholder="Amount"
+        onChange={setFormData}
+      />
+      <button className="btn" type="submit">
+        Submit
+      </button>
     </form>
   );
 }
