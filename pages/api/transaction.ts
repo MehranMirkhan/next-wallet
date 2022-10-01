@@ -7,13 +7,13 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log(JSON.stringify(req.body));
   switch (req.method) {
     case "GET":
       res.status(200).json(await get());
       break;
     case "POST":
-      const { fromWalletId, toWalletId, amount } = req.body;
-      res.status(201).json(await insert(fromWalletId, toWalletId, amount));
+      res.status(201).json(await insert(req.body));
       break;
   }
 }
@@ -22,15 +22,6 @@ async function get() {
   return await prisma.transaction.findMany();
 }
 
-async function insert(
-  fromWalletId: number,
-  toWalletId: number,
-  amount: number
-) {
-  const trans = {
-    fromWalletId,
-    toWalletId,
-    amount,
-  };
-  return await prisma.transaction.create({ data: trans });
+async function insert(trans: Partial<Transaction>) {
+  return await prisma.transaction.create({ data: trans as any });
 }
