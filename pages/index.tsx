@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useReducer, useState } from "react";
 import { Transaction } from "@prisma/client";
 import Head from "next/head";
-import axios from "axios";
 
-import CrudTable from "components/CrudTable";
-import Layout, { Footer, Gap } from "components/Layout";
+import api from "api";
+import { Layout, Footer, Gap, CrudTable } from "components";
 
 export default function Home() {
   const { transactions, onGetTransactions } = useTransaction();
@@ -15,11 +14,15 @@ export default function Home() {
       </Head>
 
       <main>
-        <h1 className="text-3xl font-bold text-center">Welcome to Next Wallet</h1>
+        <h1 className="text-3xl font-bold text-center">
+          Welcome to Next Wallet
+        </h1>
         <Gap />
         <TransactionForm />
         <Gap />
-        <button className="btn mb-2" onClick={onGetTransactions}>Refresh</button>
+        <button className="btn mb-2" onClick={onGetTransactions}>
+          Refresh
+        </button>
         <CrudTable
           columns={[
             { title: "From Wallet", key: "fromWalletId" },
@@ -27,7 +30,7 @@ export default function Home() {
             { title: "Amount", key: "amount" },
           ]}
           data={transactions}
-          onDelete={deleteTransaction}
+          onDelete={api.transaction.delete}
         />
       </main>
 
@@ -49,7 +52,7 @@ function TransactionForm() {
   const onSubmit = useCallback(
     async (event) => {
       event.preventDefault();
-      await createTransaction(formData);
+      await api.transaction.create(formData);
       setFormData(null);
     },
     [formData]
@@ -81,7 +84,9 @@ function TransactionForm() {
         value={formData.amount}
         onChange={setFormData}
       />
-      <button className="btn" type="submit">Submit</button>
+      <button className="btn" type="submit">
+        Submit
+      </button>
     </form>
   );
 }
@@ -89,22 +94,13 @@ function TransactionForm() {
 function useTransaction() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const onGetTransactions = useCallback(
-    async () => void setTransactions(await getTransactions()),
+    async () =>
+      void setTransactions(
+        await api.transaction.findAll().then((res) => res.data)
+      ),
     []
   );
   useEffect(() => void onGetTransactions(), [onGetTransactions]);
 
   return { transactions, onGetTransactions };
-}
-
-async function getTransactions(): Promise<Transaction[]> {
-  return (await axios.get("/api/transaction")).data;
-}
-
-async function createTransaction(data: Transaction): Promise<Transaction[]> {
-  return (await axios.post("/api/transaction", data)).data;
-}
-
-async function deleteTransaction(id: string | number) {
-  axios.delete(`/api/transaction/${id}`);
 }
