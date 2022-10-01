@@ -1,0 +1,24 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Wallet {
+  id      Int   @id @default(autoincrement())
+  balance Float
+}
+
+model Transaction {
+  id           Int      @id @default(autoincrement())
+  fromWalletId Int
+  toWalletId   Int
+  amount       Float
+  timestamp    DateTime @default(now())
+}
