@@ -3,7 +3,7 @@ import { Transaction } from "@prisma/client";
 import Head from "next/head";
 import axios from "axios";
 
-import Table from "components/Table";
+import CrudTable from "components/CrudTable";
 import Layout, { Footer } from "components/Layout";
 
 export default function Home() {
@@ -18,13 +18,14 @@ export default function Home() {
         <h1 className="text-3xl font-bold underline">Welcome to Next Wallet</h1>
         <TransactionForm />
         <button onClick={onGetTransactions}>Refresh</button>
-        <Table
+        <CrudTable
           columns={[
             { title: "From Wallet", key: "fromWalletId" },
             { title: "To Wallet", key: "toWalletId" },
             { title: "Amount", key: "amount" },
           ]}
           data={transactions}
+          onDelete={deleteTransaction}
         />
       </main>
 
@@ -97,4 +98,8 @@ async function getTransactions(): Promise<Transaction[]> {
 
 async function createTransaction(data: Transaction): Promise<Transaction[]> {
   return (await axios.post("/api/transaction", data)).data;
+}
+
+async function deleteTransaction(id: string | number) {
+  axios.delete(`/api/transaction/${id}`);
 }

@@ -1,9 +1,13 @@
-export function Table({
+type Entity = { id: string | number; [key: string]: any };
+
+export function CrudTable({
   columns,
   data,
+  onDelete,
 }: {
   columns: { title: string; key: string }[];
-  data: { [key: string]: any }[];
+  data: Entity[];
+  onDelete: (id: string | number) => void;
 }) {
   return (
     <table className="min-w-full divide-y divide-gray-200 table-fixed dark:divide-gray-700">
@@ -18,6 +22,7 @@ export function Table({
               {c.title}
             </th>
           ))}
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
@@ -31,6 +36,11 @@ export function Table({
                 {d[c.key]}
               </td>
             ))}
+            <td>
+              <button className="bg-red-700 hover:bg-red-600 text-center" onClick={() => onDelete(d.id)}>
+                Delete
+              </button>
+            </td>
           </tr>
         ))}
       </tbody>
@@ -38,4 +48,4 @@ export function Table({
   );
 }
 
-export default Table;
+export default CrudTable;
