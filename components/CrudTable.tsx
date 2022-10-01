@@ -1,3 +1,5 @@
+import { Delete } from "./Icons";
+
 type Entity = { id: string | number; [key: string]: any };
 
 export function CrudTable({
@@ -37,8 +39,8 @@ export function CrudTable({
               </td>
             ))}
             <td>
-              <button className="bg-red-700 hover:bg-red-600 text-center" onClick={() => onDelete(d.id)}>
-                Delete
+              <button onClick={() => onDelete(d.id)}>
+                <Delete color="red" />
               </button>
             </td>
           </tr>

@@ -4,7 +4,7 @@ import Head from "next/head";
 import axios from "axios";
 
 import CrudTable from "components/CrudTable";
-import Layout, { Footer } from "components/Layout";
+import Layout, { Footer, Gap } from "components/Layout";
 
 export default function Home() {
   const { transactions, onGetTransactions } = useTransaction();
@@ -15,9 +15,11 @@ export default function Home() {
       </Head>
 
       <main>
-        <h1 className="text-3xl font-bold underline">Welcome to Next Wallet</h1>
+        <h1 className="text-3xl font-bold text-center">Welcome to Next Wallet</h1>
+        <Gap />
         <TransactionForm />
-        <button onClick={onGetTransactions}>Refresh</button>
+        <Gap />
+        <button className="btn mb-2" onClick={onGetTransactions}>Refresh</button>
         <CrudTable
           columns={[
             { title: "From Wallet", key: "fromWalletId" },
@@ -54,9 +56,10 @@ function TransactionForm() {
   );
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} className="flex">
       <input
         type="text"
+        className="mx-1"
         name="fromWalletId"
         placeholder="Source Wallet Id"
         value={formData.fromWalletId}
@@ -64,6 +67,7 @@ function TransactionForm() {
       />
       <input
         type="text"
+        className="mx-1"
         name="toWalletId"
         placeholder="Destination Wallet Id"
         value={formData.toWalletId}
@@ -71,12 +75,13 @@ function TransactionForm() {
       />
       <input
         type="text"
+        className="mx-1"
         name="amount"
         placeholder="Amount"
         value={formData.amount}
         onChange={setFormData}
       />
-      <button type="submit">Submit</button>
+      <button className="btn" type="submit">Submit</button>
     </form>
   );
 }
