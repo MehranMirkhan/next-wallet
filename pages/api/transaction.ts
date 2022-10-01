@@ -7,7 +7,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  console.log(JSON.stringify(req.body));
   switch (req.method) {
     case "GET":
       res.status(200).json(await get());

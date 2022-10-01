@@ -1,14 +1,15 @@
-import { useCallback, useReducer, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { Transaction } from "@prisma/client";
 import Head from "next/head";
 import axios from "axios";
 
 import Table from "components/Table";
+import Layout, { Footer } from "components/Layout";
 
 export default function Home() {
   const { transactions, onGetTransactions } = useTransaction();
   return (
-    <div className="container relative h-screen">
+    <Layout>
       <Head>
         <title>Next Wallet</title>
       </Head>
@@ -16,9 +17,7 @@ export default function Home() {
       <main>
         <h1 className="text-3xl font-bold underline">Welcome to Next Wallet</h1>
         <TransactionForm />
-        <button className="btn" onClick={onGetTransactions}>
-          Refresh
-        </button>
+        <button onClick={onGetTransactions}>Refresh</button>
         <Table
           columns={[
             { title: "From Wallet", key: "fromWalletId" },
@@ -29,14 +28,13 @@ export default function Home() {
         />
       </main>
 
-      <footer className="absolute bottom-0 w-full text-center">
-        Next Wallet © All Rights Reserved 2022
-      </footer>
-    </div>
+      <Footer>Next Wallet © All Rights Reserved 2022</Footer>
+    </Layout>
   );
 }
 
 function transactionFormReducer(state, event) {
+  if (!event) return {};
   return {
     ...state,
     [event.target.name]: Number(event.target.value),
@@ -45,34 +43,39 @@ function transactionFormReducer(state, event) {
 
 function TransactionForm() {
   const [formData, setFormData] = useReducer(transactionFormReducer, {});
-  const onSubmit = useCallback(() => createTransaction(formData), [formData]);
+  const onSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      await createTransaction(formData);
+      setFormData(null);
+    },
+    [formData]
+  );
 
   return (
     <form onSubmit={onSubmit}>
       <input
-        className="input"
         type="text"
         name="fromWalletId"
         placeholder="Source Wallet Id"
+        value={formData.fromWalletId}
         onChange={setFormData}
       />
       <input
-        className="input"
         type="text"
         name="toWalletId"
         placeholder="Destination Wallet Id"
+        value={formData.toWalletId}
         onChange={setFormData}
       />
       <input
-        className="input"
         type="text"
         name="amount"
         placeholder="Amount"
+        value={formData.amount}
         onChange={setFormData}
       />
-      <button className="btn" type="submit">
-        Submit
-      </button>
+      <button type="submit">Submit</button>
     </form>
   );
 }
@@ -83,6 +86,8 @@ function useTransaction() {
     async () => void setTransactions(await getTransactions()),
     []
   );
+  useEffect(() => void onGetTransactions(), [onGetTransactions]);
+
   return { transactions, onGetTransactions };
 }
 
