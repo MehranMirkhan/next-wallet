@@ -1,12 +1,23 @@
-import { useCallback, useEffect, useReducer, useState } from "react";
-import { Transaction } from "@prisma/client";
 import Head from "next/head";
+import { Field, Form, Formik } from "formik";
 
-import api from "api";
 import { Layout, Footer, Gap, CrudTable } from "components";
+import {
+  useFindAllQuery,
+  useCreateMutation,
+  useRemoveMutation,
+} from "state/transactions";
 
 export default function Home() {
-  const { transactions, onGetTransactions } = useTransaction();
+  const {
+    data: transactions,
+    error: findAllTransactionsError,
+    isLoading: findAllTransactionsLoading,
+  } = useFindAllQuery();
+  const [
+    remove,
+    { error: deleteTransactionError, isLoading: deleteTransactionLoading },
+  ] = useRemoveMutation();
   return (
     <Layout>
       <Head>
@@ -20,17 +31,14 @@ export default function Home() {
         <Gap />
         <TransactionForm />
         <Gap />
-        <button className="btn mb-2" onClick={onGetTransactions}>
-          Refresh
-        </button>
         <CrudTable
           columns={[
             { title: "From Wallet", key: "fromWalletId" },
             { title: "To Wallet", key: "toWalletId" },
             { title: "Amount", key: "amount" },
           ]}
-          data={transactions}
-          onDelete={api.transaction.delete}
+          data={transactions ?? []}
+          onDelete={(id) => remove(Number(id))}
         />
       </main>
 
@@ -39,68 +47,49 @@ export default function Home() {
   );
 }
 
-function transactionFormReducer(state, event) {
-  if (!event) return {};
-  return {
-    ...state,
-    [event.target.name]: Number(event.target.value),
-  };
-}
-
 function TransactionForm() {
-  const [formData, setFormData] = useReducer(transactionFormReducer, {});
-  const onSubmit = useCallback(
-    async (event) => {
-      event.preventDefault();
-      await api.transaction.create(formData);
-      setFormData(null);
-    },
-    [formData]
-  );
+  const [create, { error, isLoading }] = useCreateMutation();
 
   return (
-    <form onSubmit={onSubmit} className="flex">
-      <input
-        type="text"
-        className="mx-1"
-        name="fromWalletId"
-        placeholder="Source Wallet Id"
-        value={formData.fromWalletId}
-        onChange={setFormData}
-      />
-      <input
-        type="text"
-        className="mx-1"
-        name="toWalletId"
-        placeholder="Destination Wallet Id"
-        value={formData.toWalletId}
-        onChange={setFormData}
-      />
-      <input
-        type="text"
-        className="mx-1"
-        name="amount"
-        placeholder="Amount"
-        value={formData.amount}
-        onChange={setFormData}
-      />
-      <button className="btn" type="submit">
-        Submit
-      </button>
-    </form>
+    <Formik
+      initialValues={{
+        fromWalletId: "",
+        toWalletId: "",
+        amount: "",
+      }}
+      onSubmit={async (values, { setSubmitting, resetForm }) => {
+        const trans = {};
+        for (let key in values) trans[key] = Number(values[key]);
+        await create(trans);
+        resetForm();
+        setSubmitting(false);
+      }}
+    >
+      {({ isSubmitting }) => (
+        <Form className="flex">
+          <Field
+            type="text"
+            className="mx-1"
+            name="fromWalletId"
+            placeholder="Source Wallet Id"
+          />
+          <Field
+            type="text"
+            className="mx-1"
+            name="toWalletId"
+            placeholder="Destination Wallet Id"
+          />
+          <Field
+            type="text"
+            className="mx-1"
+            name="amount"
+            placeholder="Amount"
+          />
+          <button className="btn" type="submit" disabled={isSubmitting}>
+            Submit
+          </button>
+        </Form>
+      )}
+    </Formik>
   );
-}
-
-function useTransaction() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const onGetTransactions = useCallback(
-    async () =>
-      void setTransactions(
-        await api.transaction.findAll().then((res) => res.data)
-      ),
-    []
-  );
-  useEffect(() => void onGetTransactions(), [onGetTransactions]);
-
-  return { transactions, onGetTransactions };
 }

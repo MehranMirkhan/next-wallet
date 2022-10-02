@@ -1,7 +1,7 @@
-import { PrismaClient, Transaction } from "@prisma/client";
+import { Transaction } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const prisma = new PrismaClient();
+import { Prisma } from "pages/api";
 
 export default async function handler(
   req: NextApiRequest,
@@ -9,18 +9,26 @@ export default async function handler(
 ) {
   switch (req.method) {
     case "GET":
-      res.status(200).json(await get());
-      break;
+      try {
+        const result = await get();
+        return res.status(200).json(result);
+      } catch (e) {
+        return res.status(500).json({ message: JSON.stringify(e) });
+      }
     case "POST":
-      res.status(201).json(await insert(req.body));
-      break;
+      try {
+        const result = await insert(req.body);
+        return res.status(201).json(result);
+      } catch (e) {
+        return res.status(500).json({ message: JSON.stringify(e) });
+      }
   }
 }
 
-async function get() {
-  return await prisma.transaction.findMany();
+function get() {
+  return Prisma.getPrisma().transaction.findMany();
 }
 
-async function insert(trans: Partial<Transaction>) {
-  return await prisma.transaction.create({ data: trans as any });
+function insert(trans: Partial<Transaction>) {
+  return Prisma.getPrisma().transaction.create({ data: trans as any });
 }

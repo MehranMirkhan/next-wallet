@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const prisma = new PrismaClient();
+import { Prisma } from "pages/api";
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,12 +9,15 @@ export default async function handler(
   const id = Number(req.query.id);
   switch (req.method) {
     case "DELETE":
-      await remove(id);
-      res.status(200);
-      break;
+      try {
+        await remove(id);
+        return res.status(200).json({ id });
+      } catch (e) {
+        return res.status(500).json({ message: JSON.stringify(e) });
+      }
   }
 }
 
-async function remove(id) {
-  await prisma.transaction.delete({ where: { id } });
+function remove(id) {
+  return Prisma.getPrisma().transaction.delete({ where: { id } });
 }
