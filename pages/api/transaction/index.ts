@@ -1,12 +1,16 @@
 import { Transaction } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
+import { unstable_getServerSession } from "next-auth/next";
 
 import { Prisma } from "pages/api";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const session = await unstable_getServerSession(req, res, authOptions);
+  if (!session) return res.status(401).json({ message: "Please sign in" });
   switch (req.method) {
     case "GET":
       try {

@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { Field, Form, Formik } from "formik";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 import { Layout, Footer, Gap, CrudTable } from "components";
 import {
@@ -9,6 +10,7 @@ import {
 } from "state/transactions";
 
 export default function Home() {
+  const { data: session } = useSession();
   const {
     data: transactions,
     error: findAllTransactionsError,
@@ -28,6 +30,17 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-center">
           Welcome to Next Wallet
         </h1>
+        {session ? (
+          <>
+            Signed in as {JSON.stringify(session.user)} <br />
+            <button className="btn" onClick={() => signOut()}>Sign out</button>
+          </>
+        ) : (
+          <>
+            Not signed in <br />
+            <button className="btn" onClick={() => signIn()}>Sign in</button>
+          </>
+        )}
         <Gap />
         <TransactionForm />
         <Gap />
